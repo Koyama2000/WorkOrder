@@ -1,5 +1,8 @@
 package com.kgc.work.bean;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,7 +16,8 @@ public class WorkOrder implements Serializable {
     private String description;
 
     private Integer orderlevel;
-
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date createdate;
 
     private String projectname;

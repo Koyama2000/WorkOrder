@@ -41,8 +41,9 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         BoolQueryBuilder boolQueryBuilder=new BoolQueryBuilder();
             MatchQueryBuilder matchQueryBuilder=new MatchQueryBuilder("projectid",proid);
             boolQueryBuilder.must(matchQueryBuilder);
+        searchSourceBuilder.query(boolQueryBuilder);
         String dsl=searchSourceBuilder.toString();
-        Search search=new Search.Builder(dsl).addIndex("work").addType("workorder").build();
+        Search search=new Search.Builder(dsl).addIndex("worko").addType("workorder").build();
         try {
             SearchResult searchResult=jestClient.execute(search);
             List<SearchResult.Hit<WorkOrder,Void>> hits=searchResult.getHits(WorkOrder.class);
@@ -75,7 +76,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
         }
         System.out.println(assetsInfos);
         for (WorkOrder work : assetsInfos) {
-            Index index=new Index.Builder(work).index("work").type("workorder").id(work.getId()+"").build();
+            Index index=new Index.Builder(work).index("worko").type("workorder").id(work.getId()+"").build();
             try {
                 jestClient.execute(index);
             } catch (IOException e) {

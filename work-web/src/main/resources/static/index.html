@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="vuebox">
+            <!--图书列表-->
+            <div class="row">
+                <div class="col-md-12">
+                    <label>选择项目:</label>
+                    <select v-model="proid">
+                        <option value="0">请选择</option>
+                        <option v-for="item in prolist" :value="item.id">{{item.projectname}}</option>
+                    </select>
+                    <br/>
+                    <button @click="queryAll()">查询</button><button @click="openAdd()">新增</button>
+                </div>
+                <div class="col-md-12">
+                    <br/>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>所属项目</th>
+                            <th>执行人</th>
+                            <th>任务描述</th>
+                            <th>工单级别</th>
+                            <th>开始时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="item in WorkOrderlist">
+                            <td v-for="items in prolist"  v-if="item.projectid==items.id">
+                                {{items.projectname}}</td>
+                            <td>{{item.executor}}</td>
+                            <td>{{item.description}}</td>
+                            <td>{{item.orderlevel}}</td>
+                            <td>{{item.createdate}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                </div>
+            </div>
+            <!-- 添加模态框-->
+            <div class="modal fade" id="AddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 class="modal-title" id="myModalLabel">添加</h4>
+                        </div>
+                        <div class="modal-body">
+                            <label>执行人:</label><input type="text" class="form-control" v-model="work.executor"/><br/>
+                            <label>任务描述:</label><input type="text" class="form-control" v-model="work.description"/><br/>
+                            <label>工单级别:</label>
+                            <select v-model="work.orderlevel">
+                                <option value="1">1级</option>
+                                <option value="2">2级</option>
+                                <option value="3">3级</option>
+                            </select><br/>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                            <a href="#" class="btn btn-primary" @click="saveWork()">提交更改</a>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+<script type="text/javascript">
+    var vm=new Vue({
+        el:"#vuebox",
+        data:{
+            proid:0,
+            WorkOrderlist:[],
+            prolist:[],
+            work:{projectid:0,executor:null,description:null,orderlevel:1}
+        }
+        ,mounted() {
+            this.queryPro();
+            
+        },methods:{
+            queryAll:function () {
+                    if(this.proid!=0){
+                        axios({url:"/work/list", method:"get",
+                            params:{projectid:this.proid}})
+                            .then(res=>{
+                                console.log(res.data);
+                                this.WorkOrderlist=res.data;
+                            })
+                    }
+            },
+            queryPro:function () {
+                    axios({url:"/project/list", method:"get",
+                        params:{}})
+                        .then(res=>{
+                            console.log(res.data);
+                            this.prolist=res.data;
+                        })
+            },
+            openAdd:function () {
+                if(this.proid==0){
+                    alert("请选择项目!");
+                    return false;
+                }
+                $("#AddModal").modal("show");
+            },
+            saveWork:function () {
+                    this.work.projectid=this.proid;
+                    axios.post("/work/add",this.work).then(res=>{
+                      if(res.data==1){
+                            alert("添加成功!");
+                            $("#AddModal").modal("hide");
+                            this.queryAll();
+                            this.work={projectid:this.proid,executor:null,description:null,orderlevel:1}
+                        }
+                        if(res.data==0){
+                            alert("添加失败!");
+                        }
+                    });
+            }
+        }
+
+
+    })
+</script>
